@@ -1,0 +1,53 @@
+/* Dark Mode Modern Engineering Theme */
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+h1, h2 { color: #4CAF50; }
+a { color: #64b5f6; }
+
+/* The Table */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    background-color: #2d2d2d;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+th {
+    background-color: #333;
+    color: #4CAF50;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #444;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #444;
+}
+
+/* Status Colors */
+.passed { color: #81c784; font-weight: bold; }
+.failed { color: #e57373; font-weight: bold; }
+.skipped { color: #ffb74d; }
+.error { color: #ff5252; font-weight: bold; }
+
+/* The Screenshot Box */
+.label {
+    font-size: 0.8em;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+img {
+    transition: transform 0.2s;
+}
+img:hover {
+    transform: scale(1.5);
+    border-color: #4CAF50 !important;
+    cursor: zoom-in;
+}
