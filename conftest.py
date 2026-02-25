@@ -5,9 +5,9 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.remote.client_config import ClientConfig\
 
-BS_USERNAME   = "grahish_MruQfF"
-BS_ACCESS_KEY = "G2PkXHeqZP3BMEpiZwwt"
-BS_URL = "https://hub.browserstack.com/wd/hub"
+BS_USERNAME   = "BS_USERNAME"
+BS_ACCESS_KEY = "BS_ACESS_KEY"
+BS_URL = "BS_URL"
 
 LOCAL_BROWSERS = ["chrome", "edge"]
 
