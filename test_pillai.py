@@ -1,43 +1,73 @@
-import pytest
 import time
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import os
 
-# Define the navigation path
-PAGES_TO_TEST = [
-    ("Home", "https://pillai.edu.in"),
-    ("About", "https://pillai.edu.in/about"),
-    ("Programs", "https://pillai.edu.in/programs"),
-    ("Admission", "https://pillai.edu.in/pulse")
-]
+def w(driver):
+    return WebDriverWait(driver, 15)
 
 
-@pytest.mark.parametrize("page_name, url", PAGES_TO_TEST)
-def test_navigation_and_ui(driver, page_name, url):
-    print(f"\nTesting Page: {page_name} on {driver.name}")
-
-    # 1. Measure Load Time
-    start_time = time.time()
-    driver.get(url)
-    end_time = time.time()
-
-    load_time = round(end_time - start_time, 2)
-    print(f"   -> Load Time: {load_time} seconds")
-
-    # 2. UI Consistency Check (Does the Logo Exist?)
-    # Most pages have the logo in the header. If it's gone, UI is broken.
+def dismiss_popup(driver):
+    print("    ⏳ Checking for popup...")
     try:
-        # We look for the main logo image
-        logo = driver.find_element(By.TAG_NAME, "img")
-        is_displayed = logo.is_displayed()
-        print(f"   -> Logo Visible: {is_displayed}")
+        w(driver).until(EC.visibility_of_element_located((By.ID, "radix-:r0:")))
+        driver.execute_script("arguments[0].click();",
+            driver.find_element(By.XPATH, "//button[@aria-label='Close']"))
+        w(driver).until(EC.invisibility_of_element_located((By.ID, "radix-:r0:")))
+        print("    ✅ Popup dismissed!")
     except:
-        is_displayed = False
-        print("   -> ⚠️ UI WARNING: Logo not found!")
+        print("    ℹ️  No popup, moving on...")
 
-    # 3. Assertions (The Pass/Fail criteria)
-    # Fail if page takes too long (> 15s) or logo is missing
-    assert load_time < 15, f"Performance Issue! {page_name} took {load_time}s to load."
-    assert is_displayed, f"UI Broken! Logo not visible on {page_name}"
 
-    # Add metrics to the report log
-    print(f"   -> ✅ STATUS: {page_name} Passed. (Time: {load_time}s)")
+def hover_and_click(driver, nav_xpath, link_text):
+    el = w(driver).until(EC.presence_of_element_located((By.XPATH, nav_xpath)))
+    driver.execute_script("""
+        arguments[0].dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
+        arguments[0].dispatchEvent(new MouseEvent('mouseenter', {bubbles: true}));
+    """, el)
+    link = w(driver).until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    driver.execute_script("arguments[0].click();", link)
+
+
+def test_pillai_website_flow(driver):
+    try:
+        print("\n-> 1. Opening site...")
+        driver.get("https://pillai.edu.in")
+        time.sleep(3)
+        dismiss_popup(driver)
+
+        print("-> 2. About Us → Overview")
+        hover_and_click(driver, "//nav//button[contains(text(),'About Us')]", "Overview")
+        time.sleep(3)
+
+        print("-> 3. Programs → Find Program")
+        hover_and_click(driver, "//nav//button[contains(text(),'Programs')]", "Find Program")
+        time.sleep(6)
+
+        print("-> 4. Admissions")
+        dismiss_popup(driver)
+        el = w(driver).until(EC.element_to_be_clickable((By.XPATH, "//nav//a[contains(text(),'Admissions')]")))
+        driver.execute_script("arguments[0].click();", el)
+        time.sleep(3)
+
+        print("-> 5. Home")
+        el = w(driver).until(EC.element_to_be_clickable((By.XPATH, "//nav//a[contains(text(),'Home')]")))
+        driver.execute_script("arguments[0].click();", el)
+        time.sleep(3)
+
+        print("\n-> ✅ SUCCESS!")
+
+        # --- 🟢 MARK AS PASSED ON BROWSERSTACK ---
+        if os.environ.get("TEST_MODE") == "bs":
+            driver.execute_script(
+                'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed", "reason": "Navigation flow completed successfully!"}}'
+            )
+
+    except Exception as e:
+        # --- 🔴 MARK AS FAILED ON BROWSERSTACK ---
+        if os.environ.get("TEST_MODE") == "bs":
+            driver.execute_script(
+                'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed", "reason": "Test encountered an error or element not found."}}'
+            )
+        raise e  # Re-raise the exception so Pytest knows it failed locally too!
